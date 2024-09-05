@@ -3,3 +3,18 @@ controllers:
         path: ../src/Controller/
         namespace: App\Controller
     type: attribute
+
+quize.question:
+    path: /index
+    methods: GET
+    controller: App\Controller\QuizeController::index
+
+quize.answer:
+    path: /index
+    methods: POST
+    controller: App\Controller\QuizeController::answerQuestion
+
+quize.clear:
+    path: /clear
+    methods: GET
+    controller: App\Controller\QuizeController::clear

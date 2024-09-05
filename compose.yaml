@@ -1,30 +1,32 @@
 services:
-  database:
+  quize-postgres:
     image: postgres:16-alpine
     container_name: quize-postgres
     environment:
       POSTGRES_DB: quize
       POSTGRES_PASSWORD: quize
       POSTGRES_USER: quize
+    networks:
+      - quize
     volumes:
       - postgres_data:/var/lib/postgresql/data:rw
     restart: always
-
+    ports:
+      - "5434:5432"
 
   app:
     container_name: quize-app
     build: .
     environment:
-      DATABASE_URL: "postgresql://quize:quize@database:5432/quize?serverVersion=16&charset=utf8"
+      DATABASE_URL: "postgresql://quize:quize@quize-postgres:5432/quize?serverVersion=16&charset=utf8"
+      PHP_IDE_CONFIG: "serverName=quize"
+      SERVER_URL: "http://127.0.0.1:8085"
     networks:
       - quize
     volumes:
-      - ./bin:/application/bin
-      - ./config:/application/config
-      - ./public:/application/public
-      - ./src:/application/src
+      - .:/application
     depends_on:
-      - database
+      - quize-postgres
       - redis
     restart: always
 
@@ -53,10 +55,7 @@ services:
 
 volumes:
   postgres_data:
-
-###> doctrine/doctrine-bundle ###
-  database_data:
-###< doctrine/doctrine-bundle ###
   quize-redis:
+
 networks:
   quize:
