@@ -18,3 +18,8 @@ quize.clear:
     path: /clear
     methods: GET
     controller: App\Controller\QuizeController::clear
+
+quize.results:
+    path: /results
+    methods: GET
+    controller: App\Controller\QuizeController::showResults

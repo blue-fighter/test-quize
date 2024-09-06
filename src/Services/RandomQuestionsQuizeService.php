@@ -32,8 +32,8 @@ final readonly class RandomQuestionsQuizeService implements QuizeServiceInterfac
         if(empty($questionIds)) {
             return null;
         }
-
-        $question = $repository->find(array_rand($questionIds));
+        $randomId = array_rand($questionIds);
+        $question = $repository->find($randomId);
         return new FrontendQuestionDTO(
             id: $question->getId(),
             text: $question->getText(),

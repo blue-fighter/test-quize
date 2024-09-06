@@ -19,25 +19,14 @@ services:
     build: .
     environment:
       DATABASE_URL: "postgresql://quize:quize@quize-postgres:5432/quize?serverVersion=16&charset=utf8"
-      PHP_IDE_CONFIG: "serverName=quize"
-      SERVER_URL: "http://127.0.0.1:8085"
     networks:
       - quize
     volumes:
       - .:/application
     depends_on:
       - quize-postgres
-      - redis
     restart: always
 
-  redis:
-    image: redis:latest
-    container_name: quize-redis
-    networks:
-      - quize
-    volumes:
-      - quize-redis:/data
-    restart: always
 
   webserver:
     image: nginx:alpine
@@ -55,7 +44,6 @@ services:
 
 volumes:
   postgres_data:
-  quize-redis:
 
 networks:
   quize:

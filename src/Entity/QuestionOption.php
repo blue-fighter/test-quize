@@ -2,10 +2,10 @@
 
 namespace App\Entity;
 
-use App\Repository\QuestionRepository;
+use App\Repository\QuestionOptionRepository;
 use Doctrine\ORM\Mapping as ORM;
 use DateTime;
-#[ORM\Entity(repositoryClass: QuestionRepository::class)]
+#[ORM\Entity(repositoryClass: QuestionOptionRepository::class)]
 #[ORM\Table(name: "question_options")]
 class QuestionOption
 {
@@ -17,12 +17,16 @@ class QuestionOption
     #[ORM\Column(type: 'boolean')]
     private ?bool $isCorrectAnswer;
 
+    #[ORM\Column(type: 'integer')]
+    private ?int $questionId;
+
     #[ORM\ManyToOne(targetEntity: Question::class, inversedBy: 'questions')]
     private Question $question;
 
     public function __construct(
         ?string $text,
         ?string $isCorrectAnswer,
+        ?int $questionId,
         DateTime $date
     )
     {
@@ -47,4 +51,10 @@ class QuestionOption
     {
         return $this->question;
     }
+
+    public function getQuestionId(): ?int
+    {
+        return $this->questionId;
+    }
+
 }

@@ -2,10 +2,9 @@
 
 namespace App\Controller;
 
-use App\DTO\Frontend\FrontendQuestionDTO;
-use App\DTO\Frontend\FrontendQuestionOptionDTO;
 use App\Requests\AnswerQuestionRequest;
 use App\Services\QuizeServiceInterface;
+use App\Services\ResultServiceInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,16 +14,18 @@ class QuizeController extends AbstractController
 {
     public function __construct(
         private readonly QuizeServiceInterface $quizeService,
+        private readonly ResultServiceInterface $resultService,
     ) {}
 
     public function index(Request $request): Response
     {
-        $session = $request->getSession();
-        $answers = $session->get('answers', []);
-        $question = $this->quizeService->getQuestion($answers);
+        $previousIds = $request->getSession()->get('answers', []);
+        $question = $this->quizeService->getQuestion($previousIds);
 
         if ($question === null) {
-            return new Response('Finish');
+            return new RedirectResponse(
+                $this->generateUrl('quize.results'),
+            );
         }
 
         return $this->render('quize.html.twig', [
@@ -33,29 +34,45 @@ class QuizeController extends AbstractController
 
     }
 
-    public function answerQuestion(Request $request)
+    public function answerQuestion(Request $request): Response
     {
         $answerQuestionRequest = new AnswerQuestionRequest(
             id: $request->get('id'),
-            options: $request->get('options', []),
+            options: $request->get('options')
+                ? array_keys($request->get('options'))
+                : [],
         );
-
         $session = $request->getSession();
-        $answers = array_merge(
+
+        $resultId = $session->get('result_id');
+
+        if($resultId === null) {
+            $resultId = $this->resultService->initNewResult();
+            $session->set('result_id', $resultId);
+        }
+        $previousIds = array_merge(
             $session->get('answers', []),
             [$answerQuestionRequest->id],
         );
-        $session->set('answers', $answers);
+        $session->set('answers', $previousIds);
 
-        $question = $this->quizeService->getQuestion($answers);
+        $this->resultService->addQuestionAnswer(
+            $resultId,
+            $answerQuestionRequest,
+        );
+
+        $question = $this->quizeService->getQuestion($previousIds);
 
         if ($question === null) {
-            return new Response('Finish');
+            return new RedirectResponse(
+                $this->generateUrl('quize.results'),
+            );
         }
 
         return $this->render('quize.html.twig', [
-            'question' => $this->quizeService->getQuestion($answers),
+            'question' => $question,
         ]);
+
     }
 
     public function clear(Request $request): Response
@@ -64,5 +81,16 @@ class QuizeController extends AbstractController
         return new RedirectResponse(
             $this->generateUrl('quize.question'),
         );
+    }
+
+    public function showResults(Request $request): Response
+    {
+        $session = $request->getSession();
+        $resultId = $session->get('result_id');
+        $results = $this->resultService->getResult($resultId);
+
+        return $this->render('results.html.twig', [
+            'result' => $results,
+        ]);
     }
 }

@@ -12,16 +12,32 @@ class Result
     #[ORM\Id, ORM\Column, ORM\GeneratedValue]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $text;
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?string $data;
 
     /**
-     * @param string|null $text
+     * @param string|null $data
      */
     public function __construct(
-        ?string $text,
+        ?string $data = null,
     ) {
-        $this->text = $text;
+        $this->data = $data;
     }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getData(): ?string
+    {
+        return $this->data;
+    }
+
+    public function setData(?string $data): void
+    {
+        $this->data = $data;
+    }
+
 
 }
